@@ -5,11 +5,8 @@ import gr.excersice.watsonxai.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -28,7 +25,6 @@ public class Controller {
     public String getAccessToken() {
         try {
             return tokenService.fetchAccessToken();
-//            return new ResponseEntity<>(token, HttpStatus.OK);
         } catch (Exception e) {
             return new String("Error: " + e.getMessage() + HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -55,7 +51,7 @@ public class Controller {
     }
 
     @GetMapping("/download")
-    public ResponseEntity<byte[]> downloadPdf2()  {
+    public ResponseEntity<byte[]> downloadPdf()  {
         byte[] pdfBytes = implementationService.generatePdfFromString(analysis, inputString);
         if (pdfBytes == null) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

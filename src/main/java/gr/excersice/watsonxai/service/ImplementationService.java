@@ -14,11 +14,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 
+/**
+ * Service class that provides various implementations for generating PDFs, fetching Google search output,
+ * generating analysis based on search results, and handling text formatting.
+ */
 @Service
 public class ImplementationService {
 
@@ -43,7 +46,21 @@ public class ImplementationService {
     @Autowired
     private TokenService tokenService;
 
+    /**
+     * Sets the bearer token by fetching a new access token from the TokenService.
+     */
+    public void setBearerToken() {
+        this.bearerToken = tokenService.fetchAccessToken();
+    }
 
+    /**
+     * Fetches the Google search output using the provided input string.
+     * The method sets the bearer token, constructs the request, and sends it to the specified endpoint.
+     *
+     * @param input the input string for the Google search
+     * @return the JSON response as a string, excluding the first 11 and last 2 characters
+     * @throws RuntimeException if an error occurs while fetching the Google search output
+     */
     public String fetchGoogleSearchOutput(String input) {
         setBearerToken();
         try {
@@ -66,6 +83,15 @@ public class ImplementationService {
         }
     }
 
+    /**
+     * Generates an analysis based on the Google search output for the given input string.
+     * The method fetches the Google search output, constructs a request to the IBM text generation endpoint,
+     * and returns the generated analysis text.
+     *
+     * @param input the input string for the Google search and analysis
+     * @return the generated analysis text
+     * @throws JsonProcessingException if an error occurs while processing JSON
+     */
     public String generateAnalysisBasedOnSearch(String input) throws JsonProcessingException {
         String searchOutput = fetchGoogleSearchOutput(input);
         RestTemplate restTemplate = new RestTemplate();
@@ -93,10 +119,16 @@ public class ImplementationService {
         return results.getJSONObject(0).getString("generated_text");
     }
 
-    public void setBearerToken() {
-        this.bearerToken = tokenService.fetchAccessToken();
-    }
 
+    /**
+     * Generates a PDF from the given content and input string.
+     * The PDF includes a title derived from the input string and the content wrapped to fit within the page margins.
+     *
+     * @param content the content to be included in the PDF
+     * @param input the input string used to generate the title of the PDF
+     * @return a byte array representing the generated PDF
+     * @throws RuntimeException if an error occurs during PDF generation
+     */
     public byte[] generatePdfFromString(String content,String input) {
         try (PDDocument document = new PDDocument();
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -173,6 +205,14 @@ public class ImplementationService {
         }
     }
 
+    /**
+     * Wraps the input text to fit within the specified maximum width.
+     * The text is split into lines such that each line does not exceed the maximum width.
+     *
+     * @param text the input text to be wrapped
+     * @param maxWidth the maximum width for each line
+     * @return an array of strings, where each string is a line of wrapped text
+     */
     private String[] wrapText(String text, float maxWidth) {
         float fontSize = 12;
         float charWidth = fontSize * 0.5f;
@@ -180,11 +220,17 @@ public class ImplementationService {
         return text.replaceAll("(.{" + maxCharsPerLine + "})", "$1\n").split("\n");
     }
 
+    /**
+     * Capitalizes the first letter of each word in the input string and converts the rest of the letters to lowercase.
+     *
+     * @param input the input string containing words to be capitalized
+     * @return a string with the first letter of each word capitalized and the rest in lowercase,
+     *         or the original string if it is null or empty
+     */
     public static String capitalizeWords(String input) {
         if (input == null || input.isEmpty()) {
             return input;
         }
-
         String[] words = input.split("\\s+");
         StringBuilder capitalized = new StringBuilder();
 
@@ -195,7 +241,6 @@ public class ImplementationService {
                         .append(" ");
             }
         }
-
         return capitalized.toString().trim();
     }
 

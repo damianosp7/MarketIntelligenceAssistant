@@ -16,6 +16,7 @@ import java.util.Map;
 public class Controller {
 
     public static String analysis;
+    public static String inputString;
 
     @Autowired
     private TokenService tokenService;
@@ -46,33 +47,19 @@ public class Controller {
     public String getGeneratedAnalysis(@RequestParam String input) {
         try {
              analysis = implementationService.generateAnalysisBasedOnSearch(input);
+            inputString = input;
             return implementationService.generateAnalysisBasedOnSearch(input);
         } catch (Exception e) {
             return new String("Error: " + e.getMessage() + HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @GetMapping("/download-pdf")
-    public ResponseEntity<byte[]> downloadPdf() {
-        try {
-
-            byte[] pdfBytes = implementationService.generatePdfFromString(analysis);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", "analysis.pdf");
-            return ResponseEntity.ok().headers(headers).body(pdfBytes);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
     @GetMapping("/download")
     public ResponseEntity<byte[]> downloadPdf2()  {
-        byte[] pdfBytes = implementationService.generatePdfFromString(analysis);
+        byte[] pdfBytes = implementationService.generatePdfFromString(analysis, inputString);
         if (pdfBytes == null) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=download.pdf");
         return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);

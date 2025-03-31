@@ -1,7 +1,6 @@
 package gr.excersice.watsonxai.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import gr.excersice.watsonxai.constants.Constants;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -14,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayOutputStream;
@@ -47,7 +44,6 @@ public class ImplementationService {
     private TokenService tokenService;
 
 
-
     public String fetchGoogleSearchOutput(String input) {
         setBearerToken();
         try {
@@ -60,10 +56,10 @@ public class ImplementationService {
             String requestBody = "{\"tool_name\": \"GoogleSearch\", \"input\": \"" + input + "\", \"config\": {\"maxResults\": 0}}";
 
             HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
-            ResponseEntity<String> response = restTemplate.exchange(urlDataPlatform+agentsRunEndpoint, HttpMethod.POST, entity, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(urlDataPlatform + agentsRunEndpoint, HttpMethod.POST, entity, String.class);
             JSONObject jsonResponse = new JSONObject(response.getBody());
 
-            return jsonResponse.toString().substring(11, jsonResponse.toString().length()-2);
+            return jsonResponse.toString().substring(11, jsonResponse.toString().length() - 2);
 //            return jsonResponse.getString("output");
         } catch (Exception e) {
             throw new RuntimeException("Error fetching Google search output: " + e.getMessage());
@@ -91,7 +87,7 @@ public class ImplementationService {
                 + "\"project_id\": \"" + projectID + "\""
                 + "}";
         HttpEntity<String> genEntity = new HttpEntity<>(genRequestBody, headers);
-        ResponseEntity<String> genResponse = restTemplate.exchange(ibmUrlDallasML+ibmTextGenerationEndpoint, HttpMethod.POST, genEntity, String.class);
+        ResponseEntity<String> genResponse = restTemplate.exchange(ibmUrlDallasML + ibmTextGenerationEndpoint, HttpMethod.POST, genEntity, String.class);
         JSONObject jsonResponse = new JSONObject(genResponse.getBody());
         JSONArray results = jsonResponse.getJSONArray("results");
         return results.getJSONObject(0).getString("generated_text");
@@ -101,7 +97,7 @@ public class ImplementationService {
         this.bearerToken = tokenService.fetchAccessToken();
     }
 
-    public byte[] generatePdfFromString(String content) {
+    public byte[] generatePdfFromString(String content,String input) {
         try (PDDocument document = new PDDocument();
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
@@ -110,9 +106,29 @@ public class ImplementationService {
 
             PDPageContentStream contentStream = new PDPageContentStream(document, page);
             try {
+                // Set font for the title
+                PDType1Font titleFont = PDType1Font.HELVETICA_BOLD;
+                float fontSize = 18;
+                contentStream.setFont(titleFont, fontSize);
+
+                // Title text
+                String title = capitalizeWords(input) + " Analysis";
+
+                // Calculate title width to center it
+                float titleWidth = titleFont.getStringWidth(title) * fontSize / 1000;  // Correct string width calculation
+                float xPosition = (page.getMediaBox().getWidth() - titleWidth) / 2;
+                float yPosition = page.getMediaBox().getHeight() - 100; // 100 units from top of page
+
+                // Add title to the center of the first page
+                contentStream.beginText();
+                contentStream.newLineAtOffset(xPosition, yPosition);
+                contentStream.showText(title);
+                contentStream.endText();
+
+                // Set font for the body text
                 contentStream.setFont(PDType1Font.HELVETICA, 12);
                 float margin = 50;
-                float yPosition = page.getMediaBox().getHeight() - margin;
+                yPosition = page.getMediaBox().getHeight() - 130;
                 float lineHeight = 15;
                 float maxWidth = page.getMediaBox().getWidth() - 2 * margin;
 
@@ -162,6 +178,25 @@ public class ImplementationService {
         float charWidth = fontSize * 0.5f;
         int maxCharsPerLine = (int) (maxWidth / charWidth);
         return text.replaceAll("(.{" + maxCharsPerLine + "})", "$1\n").split("\n");
+    }
+
+    public static String capitalizeWords(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+
+        String[] words = input.split("\\s+");
+        StringBuilder capitalized = new StringBuilder();
+
+        for (String word : words) {
+            if (word.length() > 0) {
+                capitalized.append(Character.toUpperCase(word.charAt(0)))
+                        .append(word.substring(1).toLowerCase())
+                        .append(" ");
+            }
+        }
+
+        return capitalized.toString().trim();
     }
 
 

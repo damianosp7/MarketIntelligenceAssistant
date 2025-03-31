@@ -55,7 +55,6 @@ This project is a Spring Boot application that integrates with IBM Watson servic
 - **Description**: Downloads the generated PDF from the analysis.
    ```bash
   curl -X GET "http://localhost:8080/api/download" -o analysis.pdf
-  
 
 ## Setup and Installation
 

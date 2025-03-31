@@ -1,22 +1,21 @@
 ## Example 1: Ai stocks
 
 ### Generate Analysis
-   ``bash
+   ``
    curl -X POST "http://localhost:8080/api/analyze" -d "input= ai stocks"
    ``
 ### Download PDF
-   ``bash
-   curl -X GET "http://localhost:8080/api/download" -o analysisEV.pdf
+   ``curl -X GET "http://localhost:8080/api/download" -o analysisEV.pdf
     ``
 
 ## Example 2: dubai chocolate trend
 
 ### Generate Analysis
-``bash
+``
 curl -X POST "http://localhost:8080/api/analyze" -d "input= dubai chocolate trend"
 ``
 ### Download PDF
-``bash
+``
 curl -X GET "http://localhost:8080/api/download" -o analysisDubai.pdf
 ``
 

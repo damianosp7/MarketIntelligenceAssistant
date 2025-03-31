@@ -161,8 +161,8 @@ public class ImplementationService {
             }
 
             document.save(outputStream);
-
-            File file = new File("analysis.pdf");
+            String fileName = capitalizeWords(input).trim() + "Analysis.pdf";
+            File file = new File(fileName.trim());
             try (FileOutputStream fos = new FileOutputStream(file)) {
                 fos.write(outputStream.toByteArray());
             }

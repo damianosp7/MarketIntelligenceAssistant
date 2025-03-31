@@ -193,7 +193,7 @@ public class ImplementationService {
             }
 
             document.save(outputStream);
-            String fileName = capitalizeWords(input).trim() + "Analysis.pdf";
+            String fileName = capitalizeWords(input).replaceAll("\\s+", "") + "Analysis.pdf";
             File file = new File(fileName.trim());
             try (FileOutputStream fos = new FileOutputStream(file)) {
                 fos.write(outputStream.toByteArray());

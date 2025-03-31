@@ -37,7 +37,7 @@ This project is a Spring Boot application that integrates with IBM Watson servic
 - **Parameters**: `input` (String) - The input string for the Google search.
 - **Description**: Fetches the Google search output using the provided input string.
    ```bash
-  curl -X POST "http://localhost:8080/api/google" -d "input= electric vehicles"
+  curl -X POST "http://localhost:8080/api/google" -d "input= electric vehicles" 
 
 ### Generate Analysis Based on Search
 
